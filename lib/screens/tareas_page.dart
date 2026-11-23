@@ -18,6 +18,9 @@ class _TareasPageState extends State<TareasPage> {
   List<Tarea> _tareas = [];
   bool _cargando = true;
 
+  static const Color _morado = Color(0xFF7255B5);
+  static const Color _fondo = Color(0xFFF8F6FC);
+
   @override
   void initState() {
     super.initState();
@@ -142,80 +145,237 @@ class _TareasPageState extends State<TareasPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Gestor de tareas')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _tituloController,
-              decoration: const InputDecoration(
-                labelText: 'Nueva tarea',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: _agregarTarea,
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar tarea'),
-            ),
-            const SizedBox(height: 12),
-            const Text('Mis tareas', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _cargando
-                  ? const Center(child: CircularProgressIndicator())
-                  : _tareas.isEmpty
-                  ? const Center(child: Text('Todavía no hay tareas guardadas'))
-                  : ListView.builder(
-                      itemCount: _tareas.length,
-                      itemBuilder: (context, index) {
-                        final tarea = _tareas[index];
+    final completadas = _tareas.where((t) => t.completada).length;
+    final pendientes = _tareas.length - completadas;
 
-                        return Card(
-                          child: ListTile(
-                            leading: Checkbox(
-                              value: tarea.completada,
-                              onChanged: (valor) {
-                                if (valor != null) {
-                                  _alternarCompletada(tarea, valor);
-                                }
-                              },
+    return Scaffold(
+      backgroundColor: _fondo,
+      appBar: AppBar(
+        title: const Text(
+          'Gestor de tareas',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: _morado,
+        foregroundColor: Colors.white,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Encabezado personalizado
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECE5FA),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mis tareas',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: _morado,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Organiza tu día, una tarea a la vez.',
+                      style: TextStyle(fontSize: 14, color: Color(0xFF655B75)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Campo para agregar tareas
+              TextField(
+                controller: _tituloController,
+                decoration: InputDecoration(
+                  labelText: 'Nueva tarea',
+                  prefixIcon: const Icon(Icons.edit_note, color: _morado),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Botón principal
+              FilledButton.icon(
+                onPressed: _agregarTarea,
+                style: FilledButton.styleFrom(
+                  backgroundColor: _morado,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.add),
+                label: const Text('Agregar tarea'),
+              ),
+              const SizedBox(height: 18),
+
+              // Contadores
+              Row(
+                children: [
+                  Expanded(
+                    child: _contador(
+                      'Pendientes',
+                      pendientes,
+                      Icons.schedule,
+                      const Color(0xFF9468C9),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _contador(
+                      'Completadas',
+                      completadas,
+                      Icons.check_circle_outline,
+                      const Color(0xFF438C77),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              const Text(
+                'Lista de tareas',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF40364F),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Lista de tareas guardadas
+              Expanded(
+                child: _cargando
+                    ? const Center(child: CircularProgressIndicator())
+                    : _tareas.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Todavía no hay tareas guardadas',
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _tareas.length,
+                        itemBuilder: (context, index) {
+                          final tarea = _tareas[index];
+
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            elevation: 1,
+                            color: tarea.completada
+                                ? const Color(0xFFE9F5EF)
+                                : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            title: Text(
-                              tarea.titulo,
-                              style: TextStyle(
-                                decoration: tarea.completada
-                                    ? TextDecoration.lineThrough
-                                    : null,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              leading: Checkbox(
+                                activeColor: _morado,
+                                value: tarea.completada,
+                                onChanged: (valor) {
+                                  if (valor != null) {
+                                    _alternarCompletada(tarea, valor);
+                                  }
+                                },
+                              ),
+                              title: Text(
+                                tarea.titulo,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: tarea.completada
+                                      ? const Color(0xFF56826D)
+                                      : const Color(0xFF40364F),
+                                  decoration: tarea.completada
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                              ),
+                              subtitle: Text(
+                                tarea.completada
+                                    ? 'Completada · ID: ${tarea.id}'
+                                    : 'Pendiente · ID: ${tarea.id}',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: 'Editar',
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      color: _morado,
+                                    ),
+                                    onPressed: () => _editarTarea(tarea),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Eliminar',
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Color(0xFFBF6277),
+                                    ),
+                                    onPressed: () => _eliminarTarea(tarea),
+                                  ),
+                                ],
                               ),
                             ),
-                            subtitle: Text('ID: ${tarea.id}'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: 'Editar',
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => _editarTarea(tarea),
-                                ),
-                                IconButton(
-                                  tooltip: 'Eliminar',
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed: () => _eliminarTarea(tarea),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  // Tarjeta pequeña con el número de tareas
+  Widget _contador(String titulo, int cantidad, IconData icono, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icono, color: color, size: 22),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$cantidad',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(titulo, style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
