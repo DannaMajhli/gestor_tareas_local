@@ -15,15 +15,16 @@ class Tareas extends Table {
 // Base de datos
 @DriftDatabase(tables: [Tareas])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase()
+  AppDatabase([QueryExecutor? conexion])
     : super(
-        driftDatabase(
-          name: 'gestor_tareas',
-          web: DriftWebOptions(
-            sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-            driftWorker: Uri.parse('drift_worker.dart.js'),
-          ),
-        ),
+        conexion ??
+            driftDatabase(
+              name: 'gestor_tareas',
+              web: DriftWebOptions(
+                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                driftWorker: Uri.parse('drift_worker.dart.js'),
+              ),
+            ),
       );
 
   @override

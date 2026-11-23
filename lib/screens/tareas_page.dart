@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/app_database.dart';
 
 class TareasPage extends StatefulWidget {
-  const TareasPage({super.key});
+  const TareasPage({super.key, this.database});
+
+  final AppDatabase? database;
 
   @override
   State<TareasPage> createState() => _TareasPageState();
@@ -11,7 +13,7 @@ class TareasPage extends StatefulWidget {
 
 class _TareasPageState extends State<TareasPage> {
   final TextEditingController _tituloController = TextEditingController();
-  final AppDatabase _db = AppDatabase();
+  late final AppDatabase _db;
 
   List<Tarea> _tareas = [];
   bool _cargando = true;
@@ -19,6 +21,7 @@ class _TareasPageState extends State<TareasPage> {
   @override
   void initState() {
     super.initState();
+    _db = widget.database ?? AppDatabase();
     _cargarTareas();
   }
 
